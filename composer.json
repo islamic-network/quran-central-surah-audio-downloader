@@ -1,0 +1,7 @@
+{
+    "require": {
+        "aws/aws-sdk-php": "^3.33",
+        "stormiix/php-eyed3": "dev-master",
+        "james-heinrich/getid3": "^1.9"
+    }
+}

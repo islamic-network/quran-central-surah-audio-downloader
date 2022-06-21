@@ -1,0 +1,76 @@
+<?php
+// require the amazon sdk from your composer vendor dir
+require __DIR__.'/vendor/autoload.php';
+
+use Aws\S3\S3Client;
+
+function makeDir($path) {
+    return is_dir($path) || mkdir($path);
+}
+
+define('AWS_KEY', 'place access key here');
+define('AWS_SECRET_KEY', 'place secret key here');
+$ENDPOINT = 'http://objects.dreamhost.com';
+
+
+
+// Instantiate the S3 class and point it at the desired host
+$client = new S3Client([
+    'region' => 'ap-south-1',
+    'version' => '2006-03-01',
+    'endpoint' => 'https://ap-south-1.linodeobjects.com',
+    'credentials' => [
+        'key' => '',
+        'secret' => ''
+    ],
+    'use_path_style_endpoint' => true
+]);
+
+$ox = $client->listObjects(
+    [
+        'Bucket' => 'cdn.islamic.network',
+        'Delimiter' => '/',
+        'Prefix' => 'quran/audio-surah/128/'
+    ]
+);
+
+
+$objects = $ox['Contents'] ?? [];
+$objectPrefixes = $ox['CommonPrefixes'] ?? [];
+
+/*foreach ($objects as $obj) {
+    $file = $this->client->getObject(
+        [
+            'Bucket' => 'cdn.islamic.network',
+            'Key' => $obj['Key'],
+        ]
+    );
+}*/
+
+makeDir('tmp');
+$editions = [];
+//echo count($objectPrefixes);
+foreach ($objectPrefixes as $object) {
+    $y = explode('/', $object['Prefix']);
+    $x['identifier'] = $y[count($y) - 2];
+    // Download file and get reciter from ID3.
+    $cdnUrl = 'https://cdn.islamic.network/' . ($object['Prefix']) . '1.mp3';
+    file_put_contents('tmp/1.mp3', file_get_contents($cdnUrl));
+    $getID3 = new getID3;
+    $tags = $getID3->analyze('tmp/1.mp3');
+    $reciter = isset($tags['tags_html']['id3v2']['artist'][0]) ? html_entity_decode($tags['tags_html']['id3v2']['artist'][0]) : str_replace('ar.', '', $x['identifier']);
+    echo "$reciter\n";
+    $x['language'] = 'ar';
+    $x['name'] = $reciter;
+    $x['englishName'] = $reciter;
+    $x['format'] ='audio';
+    $x['type'] = 'surahbysurah';
+    $editions[] = $x;
+}
+
+file_put_contents('cdn_surah_audio.json', json_encode($editions));
+
+
+
+
+
