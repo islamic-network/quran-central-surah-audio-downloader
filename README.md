@@ -1,4 +1,4 @@
-## Surah Audio Downloder from Quran Central
+## Surah Audio Downloader from Quran Central
 
 This repo consists of 2 scripts:
 
